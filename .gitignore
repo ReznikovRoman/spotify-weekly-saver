@@ -241,3 +241,12 @@ todo.txt
 venv/
 
 drafts/
+
+*.spec
+dist/
+build/
+__pycache__/
+
+
+
+
