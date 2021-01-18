@@ -3,7 +3,7 @@ import os
 
 import spotipy
 import spotipy.util
-from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
+from spotipy.oauth2 import SpotifyOAuth
 
 
 #####################################################################################################################
@@ -21,18 +21,35 @@ def get_discover_weekly_playlist(sp: spotipy.Spotify):
         raise ValueError("Couldn't find ' Discover Weekly' Playlist.")
 
 
-def create_archive_playlist(sp, user_id, playlist_name, description=None):
-    playlist_names = [p['name'] for p in sp.current_user_playlists()['items']]
+def is_already_archived(playlist_name):
+    with open('archived_playlists.txt', 'r') as f:
+        content = f.read()
 
-    if playlist_name not in playlist_names:
+    if playlist_name in content:
+        return True
+
+    return False
+
+
+def create_archive_playlist(sp, user_id, playlist_name, description=None):
+
+    if not is_already_archived(playlist_name):
         # create new playlist
         new_dwp = sp.user_playlist_create(user_id, playlist_name, description)
+
+        with open('archived_playlists.txt', 'w') as f:
+            f.write(playlist_name)
+
         return new_dwp
     else:
         raise ValueError('Discover Weekly playlist is already archived.')
 
 
 def main():
+
+    with open('archived_playlists.txt', 'a+'):
+        pass
+
     scope = "user-read-recently-played playlist-modify-public playlist-modify-private user-read-currently-playing user-library-modify playlist-read-private user-library-read"
 
     sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=os.environ.get('SPOTIFY_WEEKLY_SAVER_CLIENT_ID'),
