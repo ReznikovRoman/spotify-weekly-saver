@@ -84,6 +84,6 @@ if __name__ == '__main__':
     except ValueError as e:
         print(e)
     except Exception as e:
-        print(e)
+        print(f"Error: {e}")
     else:
         print('Done!')
