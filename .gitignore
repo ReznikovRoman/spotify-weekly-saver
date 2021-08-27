@@ -1,5 +1,7 @@
 archived_playlists.txt
 
+run.sh
+
 ### Django ###
 *.log
 *.pot
