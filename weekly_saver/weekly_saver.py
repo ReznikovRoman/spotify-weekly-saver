@@ -6,12 +6,6 @@ from spotipy.oauth2 import SpotifyOAuth
 from spotify_handler import SpotifyHandler
 
 
-def is_already_archived(playlist_name: str) -> bool:
-    with open('archived_playlists.txt', 'r') as f:
-        content = f.read()
-    return playlist_name in content
-
-
 def archive_discover_weekly_playlist(
         spotify_instance: Spotify,
         spotify_handler: SpotifyHandler,
@@ -19,10 +13,7 @@ def archive_discover_weekly_playlist(
         playlist_name: str,
         description: str = None,
 ) -> dict:
-    if (
-            is_already_archived(playlist_name) or
-            spotify_handler.is_discover_weekly_playlist_already_in_spotify(playlist_name)
-    ):
+    if spotify_handler.is_discover_weekly_playlist_already_in_spotify(playlist_name):
         raise ValueError("Error: Discover Weekly playlist is already archived.")
 
     new_dwp = spotify_instance.user_playlist_create(user_id, playlist_name, description)
@@ -34,9 +25,6 @@ def archive_discover_weekly_playlist(
 
 
 def main() -> None:
-    with open('archived_playlists.txt', 'a+'):
-        pass
-
     scope = "user-read-recently-played " \
             "playlist-modify-public " \
             "playlist-modify-private " \
