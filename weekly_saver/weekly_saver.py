@@ -1,19 +1,9 @@
 import os
-from typing import Tuple
 
 from spotipy import Spotify
 from spotipy.oauth2 import SpotifyOAuth
 
-
-def get_discover_weekly_playlist(spotify_instance: Spotify) -> Tuple[dict, str]:
-    dwp = None
-    for playlist in spotify_instance.current_user_playlists()['items']:
-        if playlist['name'] == 'Discover Weekly':
-            dwp = spotify_instance.playlist(playlist['id'])
-
-    if dwp:
-        return dwp, dwp['tracks']['items'][0]['added_at']
-    raise ValueError("Error: Couldn't find Discover Weekly Playlist.")
+from spotify_handler import SpotifyHandler
 
 
 def is_already_archived(playlist_name: str) -> bool:
@@ -24,11 +14,15 @@ def is_already_archived(playlist_name: str) -> bool:
 
 def archive_discover_weekly_playlist(
         spotify_instance: Spotify,
+        spotify_handler: SpotifyHandler,
         user_id: str,
         playlist_name: str,
         description: str = None,
 ) -> dict:
-    if is_already_archived(playlist_name):
+    if (
+            is_already_archived(playlist_name) or
+            spotify_handler.is_discover_weekly_playlist_already_in_spotify(playlist_name)
+    ):
         raise ValueError("Error: Discover Weekly playlist is already archived.")
 
     new_dwp = spotify_instance.user_playlist_create(user_id, playlist_name, description)
@@ -57,21 +51,24 @@ def main() -> None:
         scope=scope,
     )
     spotify_instance = Spotify(auth_manager=spotify_credentials)
+    spotify_handler = SpotifyHandler(
+        spotify_instance=spotify_instance,
+    )
     user_id = spotify_instance.me().get('id')
 
     # get Discover Weekly playlist and its creation date
-    dwp, created_at = get_discover_weekly_playlist(spotify_instance)
+    dwp, created_at = spotify_handler.get_discover_weekly_playlist()
 
     # create new dwp name
     new_dwp_name = f"{dwp['name']} - {created_at.split('T')[0]}"
 
     # get tracks from the main dwp
     print('Getting tracks from your Discover Weekly Playlist...')
-    tracks = [t['track']['id'] for t in dwp['tracks']['items']]
+    tracks = [track['track']['id'] for track in dwp['tracks']['items']]
 
     # create new playlist
     print('Creating new playlist...')
-    new_dwp = archive_discover_weekly_playlist(spotify_instance, user_id, new_dwp_name)
+    new_dwp = archive_discover_weekly_playlist(spotify_instance, spotify_handler, user_id, new_dwp_name)
 
     # add tracks from the main dwp to the new one
     print('Saving tracks...')
