@@ -1,6 +1,6 @@
 archived_playlists.txt
-
 run.sh
+run.bat
 
 ### Django ###
 *.log
