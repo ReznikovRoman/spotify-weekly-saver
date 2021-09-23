@@ -1,6 +1,6 @@
 from typing import List, Tuple
 
-from spotipy import Spotify
+from spotipy import Spotify, SpotifyOAuth
 
 
 class SpotifyHandler:
@@ -9,11 +9,21 @@ class SpotifyHandler:
     def __init__(self, spotify_instance: Spotify):
         self._spotify_instance = spotify_instance
 
-    def get_spotify_instance(self):
+    def get_spotify_instance(self) -> Spotify:
         return self._spotify_instance
 
-    def set_spotify_instance(self, spotify_instance: Spotify):
+    def set_spotify_instance(self, spotify_instance: Spotify) -> None:
         self._spotify_instance = spotify_instance
+
+    def refresh_access_token(self, spotify_credentials: SpotifyOAuth) -> str:
+        cached_token: dict = spotify_credentials.get_cached_token()
+        refreshed_token: str = cached_token.get('refresh_token')
+        new_token: dict = spotify_credentials.refresh_access_token(refreshed_token)
+        new_access_token = new_token.get('access_token')
+
+        spotify_instance = Spotify(auth=new_access_token)
+        self._spotify_instance = spotify_instance
+        return new_access_token
 
     def get_current_user_playlists_data(self) -> List[dict]:
         playlists_api_limit = 50

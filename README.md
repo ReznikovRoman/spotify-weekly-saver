@@ -12,4 +12,4 @@ SPOTIFY_WEEKLY_SAVER_CLIENT_SECRET="<spotify-app-secret>"
 ```
 
 ### Startup Script
-Create run.sh file (reference: [run.example.sh](weekly_saver/run.example.sh))
+Create run.sh file (reference: [run.example.sh](run.example.sh))

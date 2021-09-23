@@ -1,7 +1,7 @@
 import os
 
 from spotipy import Spotify
-from spotipy.oauth2 import SpotifyOAuth
+from spotipy.oauth2 import SpotifyOAuth, SpotifyOauthError
 
 from spotify_handler import SpotifyHandler
 
@@ -17,9 +17,6 @@ def archive_discover_weekly_playlist(
         raise ValueError("Error: Discover Weekly playlist is already archived.")
 
     new_dwp = spotify_instance.user_playlist_create(user_id, playlist_name, description)
-
-    with open('archived_playlists.txt', 'w') as f:
-        f.write(playlist_name)
 
     return new_dwp
 
@@ -42,7 +39,13 @@ def main() -> None:
     spotify_handler = SpotifyHandler(
         spotify_instance=spotify_instance,
     )
-    user_id = spotify_instance.me().get('id')
+    try:
+        user_id = spotify_instance.me().get('id')
+    except SpotifyOauthError:
+        spotify_instance = Spotify(
+            auth=spotify_handler.refresh_access_token(spotify_credentials),
+        )
+        user_id = spotify_instance.me().get('id')
 
     # get Discover Weekly playlist and its creation date
     dwp, created_at = spotify_handler.get_discover_weekly_playlist()
