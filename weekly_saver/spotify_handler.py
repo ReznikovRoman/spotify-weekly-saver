@@ -1,6 +1,8 @@
-from typing import List, Tuple
+from typing import Tuple, Dict
 
 from spotipy import Spotify, SpotifyOAuth
+
+from constants import DISCOVER_WEEKLY_PLAYLIST_NAME
 
 
 class SpotifyHandler:
@@ -25,7 +27,7 @@ class SpotifyHandler:
         self._spotify_instance = spotify_instance
         return new_access_token
 
-    def get_current_user_playlists_data(self) -> List[dict]:
+    def get_current_user_playlists_data(self) -> Dict[str, dict]:
         playlists_api_limit = 50
         playlists_api_offset = 0
         user_playlists: dict = self._spotify_instance.current_user_playlists(
@@ -34,7 +36,10 @@ class SpotifyHandler:
         )
         playlists_total: int = user_playlists.get('total')
         playlists_api_calls_count = round(playlists_total / playlists_api_limit)
-        playlist_names = [playlist for playlist in user_playlists.get('items')]
+        playlist_data = {
+            playlist.get('name'): playlist
+            for playlist in user_playlists.get('items')
+        }
 
         while playlists_api_calls_count:
             playlists_api_offset += playlists_api_limit
@@ -42,24 +47,17 @@ class SpotifyHandler:
                 limit=playlists_api_limit,
                 offset=playlists_api_offset,
             )
-            playlist_names.extend([playlist for playlist in user_playlists.get('items')])
+            playlist_data.update({playlist.get('name'): playlist for playlist in user_playlists.get('items')})
             playlists_api_calls_count -= 1
-        return playlist_names
+        return playlist_data
 
     def get_discover_weekly_playlist(self) -> Tuple[dict, str]:
-        dwp = None
-        current_user_playlists = self.get_current_user_playlists_data()
-        for playlist_data in current_user_playlists:
-            if playlist_data.get('name') == 'Discover Weekly':
-                dwp = self._spotify_instance.playlist(playlist_data.get('id'))
+        dwp = self.get_current_user_playlists_data().get(DISCOVER_WEEKLY_PLAYLIST_NAME)
+        if dwp is None:
+            raise ValueError(f"Error: Couldn't find {DISCOVER_WEEKLY_PLAYLIST_NAME} Playlist.")
 
-        if dwp:
-            return dwp, dwp['tracks']['items'][0]['added_at']
-        raise ValueError("Error: Couldn't find Discover Weekly Playlist.")
+        dwp_spotify = self._spotify_instance.playlist(dwp.get('id'))
+        return dwp_spotify, dwp_spotify['tracks']['items'][0]['added_at']
 
     def is_discover_weekly_playlist_already_in_spotify(self, playlist_name: str) -> bool:
-        playlist_names: List[str] = [
-            playlist_data.get('name')
-            for playlist_data in self.get_current_user_playlists_data()
-        ]
-        return playlist_name in playlist_names
+        return playlist_name in self.get_current_user_playlists_data().keys()
