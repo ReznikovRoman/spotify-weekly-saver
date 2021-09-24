@@ -1,6 +1,8 @@
 archived_playlists.txt
 run.sh
 run.bat
+requirements.local.txt
+requirements.local.in
 
 ### Django ###
 *.log

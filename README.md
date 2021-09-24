@@ -11,5 +11,14 @@ SPOTIFY_WEEKLY_SAVER_CLIENT_ID="<spotify-app-client-id>"
 SPOTIFY_WEEKLY_SAVER_CLIENT_SECRET="<spotify-app-secret>"
 ```
 
+### Makefile commands:
+```shell
+# Generate requirements.*.txt files
+make compile-requirements
+
+# Sync requirements.`example`.txt environment with the requirements.txt
+make sync-requirements
+```
+
 ### Startup Script
 Create run.sh file (reference: [run.example.sh](run.example.sh))
