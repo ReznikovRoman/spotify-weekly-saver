@@ -9,3 +9,7 @@ compile-requirements:
 sync-requirements:
 	pip install pip-tools
 	pip-sync requirements.txt requirements.*.txt
+
+.PHONY: check
+check:
+	flake8
