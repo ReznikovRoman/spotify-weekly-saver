@@ -4,6 +4,10 @@ from spotipy import Spotify
 from spotipy.oauth2 import SpotifyOAuth, SpotifyOauthError
 
 from spotify_handler import SpotifyHandler
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 
 def archive_discover_weekly_playlist(
@@ -30,8 +34,8 @@ def main() -> None:
             "playlist-read-private " \
             "user-library-read"
     spotify_credentials = SpotifyOAuth(
-        client_id=os.environ.get('SPOTIFY_WEEKLY_SAVER_CLIENT_ID'),
-        client_secret=os.environ.get('SPOTIFY_WEEKLY_SAVER_CLIENT_SECRET'),
+        client_id=os.getenv('SPOTIFY_WEEKLY_SAVER_CLIENT_ID'),
+        client_secret=os.getenv('SPOTIFY_WEEKLY_SAVER_CLIENT_SECRET'),
         redirect_uri="http://localhost:8000/",
         scope=scope,
     )
